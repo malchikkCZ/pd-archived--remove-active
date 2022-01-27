@@ -13,8 +13,8 @@ def read_source_xlsx(filename):
 def build_output_xlsx(df):
     '''Write output to xls to import via Matrixify'''
     xls_writer = pd.ExcelWriter('output.xlsx')
-    df[['ID', 'Command', 'Title']].to_excel(xls_writer, 'Pages', index=False)
-    df[['Path', 'Target']].to_excel(xls_writer, 'Products', index=False)
+    df[['ID', 'Command', 'Handle', 'Title']].to_excel(xls_writer, 'Pages', index=False)
+    df[['Path', 'Target']].to_excel(xls_writer, 'Redirects', index=False)
     xls_writer.save()
 
 
@@ -44,10 +44,10 @@ def main():
         how='left'
     )
 
-    selected = selected.rename(columns={'Handle_x': 'Path', 'Handle_y': 'Target'})
+    selected = selected.rename(columns={'Handle_x': 'Handle'})
 
-    selected['Path'] = selected.apply(lambda row: f'/pages/{row["Path"]}', axis=1)
-    selected['Target'] = selected.apply(lambda row: f'/products/{row["Target"]}', axis=1)
+    selected['Path'] = selected.apply(lambda row: f'/pages/{row["Handle"]}', axis=1)
+    selected['Target'] = selected.apply(lambda row: f'/products/{row["Handle_y"]}', axis=1)
     selected['Command'] = 'DELETE'
 
     build_output_xlsx(selected)
