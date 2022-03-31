@@ -1,21 +1,5 @@
 import pandas as pd
-
-
-def read_source_xlsx(filename):
-    '''Read source xls file into separate dataframes'''
-    xls = pd.ExcelFile(filename)
-    data = {}
-    for sheet in xls.sheet_names:
-        data[sheet] = pd.read_excel(xls, sheet)
-    return data
-
-
-def build_output_xlsx(df):
-    '''Write output to xls to import via Matrixify'''
-    xls_writer = pd.ExcelWriter('output.xlsx')
-    df[['ID', 'Command', 'Handle', 'Title']].to_excel(xls_writer, 'Pages', index=False)
-    df[['Path', 'Target']].to_excel(xls_writer, 'Redirects', index=False)
-    xls_writer.save()
+from utils import Matrixify
 
 
 def get_reduced_df(df, column, value):
@@ -30,7 +14,7 @@ def is_product_active(value, compared_df):
 
 
 def main():
-    source = read_source_xlsx('source.xlsx')
+    source = Matrixify.read_source('source.xlsx')
 
     products = source['Products']
     archived = get_reduced_df(source['Pages'], 'Template Suffix', 'archived-goods')
@@ -50,8 +34,14 @@ def main():
     selected['Target'] = selected.apply(lambda row: f'/products/{row["Handle_y"]}', axis=1)
     selected['Command'] = 'DELETE'
 
-    build_output_xlsx(selected)
+    schema = {
+        'Pages': ['ID', 'Command', 'Handle', 'Title'],
+        'Redirects': ['Path', 'Target']
+    }
+
+    Matrixify.build_output(selected, schema, 'output.xlsx')
 
 
 if __name__ == '__main__':
+    pd.options.mode.chained_assignment = None
     main()
